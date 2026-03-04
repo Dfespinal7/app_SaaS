@@ -8,6 +8,7 @@ import { userRouter } from './routes/user.routes.js'
 import { authRoutes } from './modules/auth/auth.routes.js'
 import { profileRoutes } from './modules/profile/profile.routes.js'
 import { professionalsRoutes } from './modules/professionals/professionals.routes.js'
+import { servicesRoutes } from './modules/services/services.routes.js'
 
 const app=express() //creamos la aplicacion, ahora app es mi servidor
 dotenv.config()
@@ -22,6 +23,7 @@ app.use(userRouter)//le decimos a nuestra app, que vamos a usar esta const de ru
 app.use(authRoutes)
 app.use(profileRoutes)
 app.use(professionalsRoutes)
+app.use(servicesRoutes)
 
 app.get('/',(req,res)=>{
     res.json({message:'funciona'})
