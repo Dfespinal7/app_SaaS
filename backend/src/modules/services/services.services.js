@@ -22,3 +22,37 @@ export const createServiceService = async (id, body) => {
 
     return addServices.rows[0]
 }
+
+export const getMyServicesServices=async(id)=>{
+    
+    const searchProfessional = await pool.query('SELECT id FROM professionals where user_id=$1', [id])
+    
+    if(searchProfessional.rows.length===0){
+        throw new Error('PROFESSIONAL_NOT_FOUND')
+    }
+    const id_professional=searchProfessional.rows[0]?.id
+    
+    const searchServices=await pool.query('SELECT * FROM services WHERE professional_id=$1',[id_professional])
+    return searchServices.rows
+    
+}
+export const servicesForUsersServices=async(data)=>{
+    const searchService=await pool.query('SELECT id,name,description,duration_minutes,price,professional_id,active FROM services where id=$1',[data])
+    if(searchService.rows.length===0){
+        throw new Error('SERVICE_NOT_FOUND')
+    }
+    const service=searchService.rows[0]
+    if(!service.active){
+        throw new Error('SERVICE_NOT_AVAILABLE')
+    }
+    return service
+}
+
+export const serviceForProfessionalService=async(id)=>{
+    const searchProfessional=await pool.query('SELECT id,active from professionals where id=$1',[id])
+    if(searchProfessional.rows.length===0||searchProfessional.rows[0].active===false){
+        throw new Error('PROFESSIONAL_NOT_FOUND/NO_ACTIVATE')
+    }
+    const searchService=await pool.query('SELECT id,professional_id,name,description,duration_minutes,price FROM services where professional_id=$1 and active=true',[id])
+    return searchService.rows
+}

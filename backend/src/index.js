@@ -9,6 +9,7 @@ import { authRoutes } from './modules/auth/auth.routes.js'
 import { profileRoutes } from './modules/profile/profile.routes.js'
 import { professionalsRoutes } from './modules/professionals/professionals.routes.js'
 import { servicesRoutes } from './modules/services/services.routes.js'
+import { appointmentRoutes } from './modules/appointments/appointments.routes.js'
 
 const app=express() //creamos la aplicacion, ahora app es mi servidor
 dotenv.config()
@@ -24,6 +25,7 @@ app.use(authRoutes)
 app.use(profileRoutes)
 app.use(professionalsRoutes)
 app.use(servicesRoutes)
+app.use(appointmentRoutes)
 
 app.get('/',(req,res)=>{
     res.json({message:'funciona'})
