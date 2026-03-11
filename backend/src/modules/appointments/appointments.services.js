@@ -1,7 +1,7 @@
 import { pool } from "../../config/db.js"
 
 export const createAppointmentsService = async (body, id_user) => {
-    const { service_id, client_id, start_datetime, end_datetime, status, notes } = body
+    const { service_id, start_datetime, end_datetime, status, notes } = body
     const searchService = await pool.query('SELECT id,professional_id,active FROM services where id=$1', [service_id])//validamos que el servicio exista
 
     const searchProfessional = await pool.query('SELECT id,active FROM professionals where user_id=$1', [id_user])//buscamos el profesional desde el req.user,asegurandonos que el usuario que intenta crear la agenda si sea profesional, aunque ya eso lo valida el middleware
@@ -34,7 +34,23 @@ export const createAppointmentsService = async (body, id_user) => {
     if (start < new Date()) {//validamos que no se ingresen fechas en pasado
         throw new Error("SLOT_IN_PAST")
     }
-    //quedamoe en validacion 6 
-    //const response=await pool.query('INSERT INTO appointments(service_id,professional_id,client_id,start_datetime,end_datetime,status,notes)VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING service_id,professional_id,client_id,start_datetime,end_datetime,status,notes',[service_id,professional_id,client_id,start_datetime,end_datetime,status,notes])
-    return body
+    const validSlot=await pool.query(`SELECT id FROM appointments where professional_id=$1 AND status<>'canceled' AND (start_datetime<$2 AND end_datetime >$3)`,[professional_id,end,start])
+    if(validSlot.rows.length>0){
+        throw new Error('SLOT_CONFLICT')
+    }
+    
+    const response=await pool.query('INSERT INTO appointments(service_id,professional_id,start_datetime,end_datetime,status,notes)VALUES($1,$2,$3,$4,$5,$6) RETURNING service_id,professional_id,start_datetime,end_datetime,status,notes',[service_id,professional_id,start_datetime,end_datetime,status,notes])
+    return response.rows
+}
+export const getAppointmentsForServiceService=async(id)=>{
+    if(!id){
+        throw new Error('PARAM_NOT_VALID')
+    }
+    const validService=await pool.query('SELECT id,active FROM services where id=$1',[id])
+    if(validService.rows.length===0 || !validService.rows[0].active){
+        throw new Error('SERVICE_NOT_FOUND')
+    }
+    const fecha_actual=new Date
+    const query=await pool.query(`SELECT id,service_id,client_id,start_datetime,end_datetime,status,notes FROM appointments WHERE service_id=$1 AND start_datetime>$2 AND status = 'available' ORDER BY start_datetime ASC`,[id,fecha_actual])
+    return query.rows
 }
