@@ -34,23 +34,48 @@ export const createAppointmentsService = async (body, id_user) => {
     if (start < new Date()) {//validamos que no se ingresen fechas en pasado
         throw new Error("SLOT_IN_PAST")
     }
-    const validSlot=await pool.query(`SELECT id FROM appointments where professional_id=$1 AND status<>'canceled' AND (start_datetime<$2 AND end_datetime >$3)`,[professional_id,end,start])
-    if(validSlot.rows.length>0){
+    const validSlot = await pool.query(`SELECT id FROM appointments where professional_id=$1 AND status<>'canceled' AND (start_datetime<$2 AND end_datetime >$3)`, [professional_id, end, start])
+    if (validSlot.rows.length > 0) {
         throw new Error('SLOT_CONFLICT')
     }
-    
-    const response=await pool.query('INSERT INTO appointments(service_id,professional_id,start_datetime,end_datetime,status,notes)VALUES($1,$2,$3,$4,$5,$6) RETURNING service_id,professional_id,start_datetime,end_datetime,status,notes',[service_id,professional_id,start_datetime,end_datetime,status,notes])
+
+    const response = await pool.query('INSERT INTO appointments(service_id,professional_id,start_datetime,end_datetime,status,notes)VALUES($1,$2,$3,$4,$5,$6) RETURNING service_id,professional_id,start_datetime,end_datetime,status,notes', [service_id, professional_id, start_datetime, end_datetime, status, notes])
     return response.rows
 }
-export const getAppointmentsForServiceService=async(id)=>{
-    if(!id){
+export const getAppointmentsForServiceService = async (id) => {
+    if (!id) {
         throw new Error('PARAM_NOT_VALID')
     }
-    const validService=await pool.query('SELECT id,active FROM services where id=$1',[id])
-    if(validService.rows.length===0 || !validService.rows[0].active){
+    const validService = await pool.query('SELECT id,active FROM services where id=$1', [id])
+    if (validService.rows.length === 0 || !validService.rows[0].active) {
         throw new Error('SERVICE_NOT_FOUND')
     }
-    const fecha_actual=new Date
-    const query=await pool.query(`SELECT id,service_id,client_id,start_datetime,end_datetime,status,notes FROM appointments WHERE service_id=$1 AND start_datetime>$2 AND status = 'available' ORDER BY start_datetime ASC`,[id,fecha_actual])
+    const fecha_actual = new Date
+
+    const query = await pool.query(`SELECT id,service_id,professional_id,client_id,start_datetime,end_datetime,status,notes FROM appointments WHERE service_id=$1 AND start_datetime>$2 AND status = 'available' ORDER BY start_datetime ASC`, [id, fecha_actual])
     return query.rows
+}
+
+export const bookAppointmentService = async (id_appointment, id_user) => { //funcion para reservar cita
+    if (!Number.isInteger(Number(id_appointment)) || Number(id_appointment) <= 0) {
+        throw new Error('INVALID_APPOINTMENT_ID')
+    }
+    const fecha_actual = new Date
+    const validAppointment = await pool.query('SELECT id,status,start_datetime FROM appointments where id=$1 ', [id_appointment])
+    if (validAppointment.rows.length === 0) {
+        throw new Error('APPOINTMENT_NOT_FOUND')
+    }
+    if (fecha_actual > validAppointment.rows[0].start_datetime) {
+        throw new Error('DATE_IN_PAST')
+    }
+    if (validAppointment.rows[0]?.status.toLowerCase() !== 'available') {
+        throw new Error('NOT_AVAILABLE')
+    }
+
+
+    const updateSlot = await pool.query(`UPDATE appointments SET client_id=$1,status='confirmed' where id=$2 AND status='available' RETURNING id,service_id,professional_id,client_id,start_datetime,end_datetime,status`, [id_user, id_appointment])
+    if (updateSlot.rows.length === 0) {
+        throw new Error('NOT_AVAILABLE')
+    }
+    return updateSlot.rows[0]
 }
