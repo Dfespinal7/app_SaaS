@@ -1,5 +1,5 @@
 import { pool } from "../../config/db.js"
-import { bookAppointmentService, createAppointmentsService, getAppointmentsForServiceService } from "./appointments.services.js"
+import { bookAppointmentService, createAppointmentsService, getAppointmentsForServiceService, getMyAppointmentsService } from "./appointments.services.js"
 
 export const createAppointmentController = async (req, res) => {
     try {
@@ -45,4 +45,8 @@ export const bookAppointmentController = async (req, res) => {
         }
         return res.status(500).json('Erro en el server')
     }
+}
+export const getMyAppointmentsController=async(req,res)=>{
+    const result=await getMyAppointmentsService(req.user.id)
+    res.json(result)
 }

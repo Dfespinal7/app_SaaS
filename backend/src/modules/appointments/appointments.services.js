@@ -57,25 +57,33 @@ export const getAppointmentsForServiceService = async (id) => {
 }
 
 export const bookAppointmentService = async (id_appointment, id_user) => { //funcion para reservar cita
-    if (!Number.isInteger(Number(id_appointment)) || Number(id_appointment) <= 0) {
+    if (!Number.isInteger(Number(id_appointment)) || Number(id_appointment) <= 0) {//validamos que el parammetro ingresado si es un numero
         throw new Error('INVALID_APPOINTMENT_ID')
     }
-    const fecha_actual = new Date
-    const validAppointment = await pool.query('SELECT id,status,start_datetime FROM appointments where id=$1 ', [id_appointment])
+    const fecha_actual = new Date//constante que siempre guarda hora y fecha actual
+    const validAppointment = await pool.query('SELECT id,status,start_datetime FROM appointments where id=$1 ', [id_appointment])//validamos que la cita exista
     if (validAppointment.rows.length === 0) {
         throw new Error('APPOINTMENT_NOT_FOUND')
     }
-    if (fecha_actual > validAppointment.rows[0].start_datetime) {
+    if (fecha_actual > validAppointment.rows[0].start_datetime) {//validamos que la cita ya no haya pasado(este en futuro)
         throw new Error('DATE_IN_PAST')
     }
-    if (validAppointment.rows[0]?.status.toLowerCase() !== 'available') {
+    if (validAppointment.rows[0]?.status.toLowerCase() !== 'available') {//validamos que la seleccionada se encuentre disponible
         throw new Error('NOT_AVAILABLE')
     }
 
 
-    const updateSlot = await pool.query(`UPDATE appointments SET client_id=$1,status='confirmed' where id=$2 AND status='available' RETURNING id,service_id,professional_id,client_id,start_datetime,end_datetime,status`, [id_user, id_appointment])
-    if (updateSlot.rows.length === 0) {
+    const updateSlot = await pool.query(`UPDATE appointments SET client_id=$1,status='confirmed' where id=$2 AND status='available' RETURNING id,service_id,professional_id,client_id,start_datetime,end_datetime,status`, [id_user, id_appointment])//asignamos usuario autenticado y cambiamos estdo
+    if (updateSlot.rows.length === 0) {//retorno en caso de que dos usuarios hayan seleccionado la cita al mismo tiempo
         throw new Error('NOT_AVAILABLE')
     }
-    return updateSlot.rows[0]
+    return updateSlot.rows[0]//retornamos la cita
+}
+
+export const getMyAppointmentsService=async(client_id)=>{
+    const getMySlots=await pool.query('select a.id,s.name AS service_name,u.name AS professional_name,a.start_datetime,a.end_datetime,a.status from appointments a INNER JOIN services s ON a.service_id=s.id INNER JOIN professionals p ON a.professional_id=p.id INNER JOIN users u ON p.user_id=u.id where a.client_id=$1 ORDER BY start_datetime ASC' ,[client_id])
+    if(getMySlots.rows.length===0){
+        throw new Error('WITHOUT_APPOINTMENTS')
+    }
+    return getMySlots.rows
 }
