@@ -80,10 +80,34 @@ export const bookAppointmentService = async (id_appointment, id_user) => { //fun
     return updateSlot.rows[0]//retornamos la cita
 }
 
-export const getMyAppointmentsService=async(client_id)=>{
-    const getMySlots=await pool.query('select a.id,s.name AS service_name,u.name AS professional_name,a.start_datetime,a.end_datetime,a.status from appointments a INNER JOIN services s ON a.service_id=s.id INNER JOIN professionals p ON a.professional_id=p.id INNER JOIN users u ON p.user_id=u.id where a.client_id=$1 ORDER BY start_datetime ASC' ,[client_id])
-    if(getMySlots.rows.length===0){
+export const getMyAppointmentsService = async (client_id) => {
+    const getMySlots = await pool.query('select a.id,s.name AS service_name,u.name AS professional_name,a.start_datetime,a.end_datetime,a.status from appointments a INNER JOIN services s ON a.service_id=s.id INNER JOIN professionals p ON a.professional_id=p.id INNER JOIN users u ON p.user_id=u.id where a.client_id=$1 ORDER BY start_datetime ASC', [client_id])
+    if (getMySlots.rows.length === 0) {
         throw new Error('WITHOUT_APPOINTMENTS')
     }
     return getMySlots.rows
 }
+export const cancelASlotService = async (id_cita, id_user) => {
+    const validSlot = await pool.query('SELECT id,client_id,status,start_datetime FROM appointments where id=$1', [id_cita])
+    if (validSlot.rows.length === 0) {
+        throw new Error('SLOT_NOT_FOUND')
+    }
+    const reserva = validSlot.rows[0]
+    if (reserva.client_id !== id_user) {
+        throw new Error('CLIENT_DIFERENT')
+    }
+    if (reserva.status !== 'confirmed') {
+        throw new Error('ALREADY_CANCELED')
+    }
+    const fecha_actual=new Date()
+    if(fecha_actual>reserva.start_datetime){
+        throw new Error('APPOINTMENT_ALREADY_FINISHED')
+    }
+    const updateAppointment=await pool.query(`UPDATE appointments SET client_id=NULL,status='available' where id=$1 AND client_id=$2 RETURNING *`,[id_cita,id_user])
+
+    return {message:'cita Cancelada correctamente',cita:updateAppointment.rows}
+}
+//loguearme con prof
+//crear cita a nombre del profesional(recuerde que el servicio lo debió haber creado previamente)
+//asignar cita con un usuario de rol cliente
+//cancelar la cita y ver el retorno

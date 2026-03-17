@@ -1,5 +1,5 @@
 import { pool } from "../../config/db.js"
-import { bookAppointmentService, createAppointmentsService, getAppointmentsForServiceService, getMyAppointmentsService } from "./appointments.services.js"
+import { bookAppointmentService, cancelASlotService, createAppointmentsService, getAppointmentsForServiceService, getMyAppointmentsService } from "./appointments.services.js"
 
 export const createAppointmentController = async (req, res) => {
     try {
@@ -33,20 +33,51 @@ export const bookAppointmentController = async (req, res) => {
         const result = await bookAppointmentService(req.params.id, req.user.id)
         res.json({ slot_assigned: result })
     } catch (e) {
-        console.log('ERROR AL ASIGNAR CITA',e)
-        if (e.message==='APPOINTMENT_NOT_FOUND'){
-            return res.status(404).json({message:'la cita que intenta asignar no existe'})
+        console.log('ERROR AL ASIGNAR CITA', e)
+        if (e.message === 'APPOINTMENT_NOT_FOUND') {
+            return res.status(404).json({ message: 'la cita que intenta asignar no existe' })
         }
-        if (e.message==='NOT_AVAILABLE'){
-            return res.status(409).json({message:'la cita no se encuentra disponible'})
+        if (e.message === 'NOT_AVAILABLE') {
+            return res.status(409).json({ message: 'la cita no se encuentra disponible' })
         }
-        if (e.message==='DATE_IN_PAST'){
-            return res.status(400).json({message:'la fecha de la cita ya paso, no es posible asignarla'})
+        if (e.message === 'DATE_IN_PAST') {
+            return res.status(400).json({ message: 'la fecha de la cita ya paso, no es posible asignarla' })
         }
         return res.status(500).json('Erro en el server')
     }
 }
-export const getMyAppointmentsController=async(req,res)=>{
-    const result=await getMyAppointmentsService(req.user.id)
-    res.json(result)
+export const getMyAppointmentsController = async (req, res) => {
+    try {
+        const result = await getMyAppointmentsService(req.user.id)
+        res.json(result)
+    } catch (e) {
+        console.log('ERROR AL OBTENER CITAS', e)
+        if(e.message==='WITHOUT_APPOINTMENTS'){
+            return res.status(404).json({ message: 'No tiene citas asignadas hasta el momento' })
+        }
+        return res.status(500).json({ message: 'Error en el server' })
+    }
+}
+
+export const cancelASlotController = async (req, res) => {
+    try {
+        const result = await cancelASlotService(req.params.id, req.user.id)
+        res.json(result)
+    } catch (e) {
+        console.log('ERROR AL CANCELAR CITAS', e)
+        if(e.message==='SLOT_NOT_FOUND'){
+            return res.status(404).json({ message: 'La cita que intenta cancelar no existe' })
+        }
+        if(e.message==='CLIENT_DIFERENT'){
+            return res.status(409).json({ message: 'La cita que intenta cancelar no esta a nombre del usuario autenticado' })
+        }
+        if(e.message==='ALREADY_CANCELED'){
+            return res.status(409).json({ message: 'La cita que intenta cancelar no esta confirmada aun' })
+        }
+        if(e.message==='APPOINTMENT_ALREADY_FINISHED'){
+            return res.status(409).json({ message: 'La fecha de la cita que intenta cancelar ya pasó' })
+        }
+
+        return res.status(500).json({ message: 'Error en el server' })
+    }
 }
