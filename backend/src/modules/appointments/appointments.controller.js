@@ -48,7 +48,7 @@ export const bookAppointmentController = async (req, res) => {
 }
 export const getMyAppointmentsController = async (req, res) => {
     try {
-        const result = await getMyAppointmentsService(req.user.id)
+        const result = await getMyAppointmentsService(req.user.id,req.query.status)
         res.json(result)
     } catch (e) {
         console.log('ERROR AL OBTENER CITAS', e)

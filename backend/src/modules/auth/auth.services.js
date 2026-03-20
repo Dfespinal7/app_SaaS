@@ -51,3 +51,11 @@ export const loginUser = async ({ email, password_hash }) => {
     const token = JWT.sign({ id: user.id, role: user.role }, process.env.TOKEN_SECRET, { expiresIn: '1d' })
     return {user:{id:user.id,name:user.name,email:user.email,role:user.role},token}
 }
+export const profileUserService=async(user_id)=>{
+    console.log(user_id)
+    const getMyProfile=await pool.query('SELECT id,name,email,role FROM users where id=$1',[user_id])
+    if(getMyProfile.rows.length===0){
+        throw new Error('USER_NOT_FOUND')
+    }
+    return getMyProfile.rows[0]
+}

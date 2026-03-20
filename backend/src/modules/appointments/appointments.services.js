@@ -80,12 +80,24 @@ export const bookAppointmentService = async (id_appointment, id_user) => { //fun
     return updateSlot.rows[0]//retornamos la cita
 }
 
-export const getMyAppointmentsService = async (client_id) => {
-    const getMySlots = await pool.query('select a.id,s.name AS service_name,u.name AS professional_name,a.start_datetime,a.end_datetime,a.status from appointments a INNER JOIN services s ON a.service_id=s.id INNER JOIN professionals p ON a.professional_id=p.id INNER JOIN users u ON p.user_id=u.id where a.client_id=$1 ORDER BY start_datetime ASC', [client_id])
-    if (getMySlots.rows.length === 0) {
-        throw new Error('WITHOUT_APPOINTMENTS')
+export const getMyAppointmentsService = async (client_id, query) => {
+    let queryConsulta = 'select a.id,s.name AS service_name,u.name AS professional_name,a.start_datetime,a.end_datetime,a.status from appointments a INNER JOIN services s ON a.service_id=s.id INNER JOIN professionals p ON a.professional_id=p.id INNER JOIN users u ON p.user_id=u.id where a.client_id=$1'
+    let params = [client_id]
+    if (query) {
+        const arrayStatus = ["confirmed", "available", "canceled", "completed"]
+        if (!arrayStatus.includes(query.toLowerCase())) {
+            console.log("no esta en la lista")
+            throw new Error('STATUS_NOT_VALID')
+        }
+        queryConsulta += ' AND a.status=$2'
+        params.push(query)
+        console.log(queryConsulta)
+
     }
-    return getMySlots.rows
+    query += " ORDER BY a.start_datetime ASC"
+    const getAppointments = await pool.query(queryConsulta, params)
+    return getAppointments.rows
+
 }
 export const cancelASlotService = async (id_cita, id_user) => {
     const validSlot = await pool.query('SELECT id,client_id,status,start_datetime FROM appointments where id=$1', [id_cita])
@@ -134,13 +146,13 @@ export const completeAppointmentService = async (id_appointment, id_user) => {
     if (appointment.status.toLowerCase() !== 'confirmed') {
         throw new Error('APPOINTMENT_IS_NOT_CONFIRMED')
     }
-    const fecha_actual=new Date()
-    
-    if (fecha_actual<appointment.start_datetime){
+    const fecha_actual = new Date()
+
+    if (fecha_actual < appointment.start_datetime) {
         throw new Error('APPOINTMENT_HAVE_NOT_BEEN')
     }
     const updateAppointment = await pool.query(`UPDATE appointments set status='completed' where id=$1 AND status = 'confirmed' RETURNING id,service_id,client_id,start_datetime,status`, [id_appointment])
-    if(updateAppointment.rows.length===0){
+    if (updateAppointment.rows.length === 0) {
         throw new Error('ERROR_TO_UPDATE')
     }
     console.log(profesionalContext.rows)
