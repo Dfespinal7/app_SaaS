@@ -99,15 +99,50 @@ export const cancelASlotService = async (id_cita, id_user) => {
     if (reserva.status !== 'confirmed') {
         throw new Error('ALREADY_CANCELED')
     }
-    const fecha_actual=new Date()
-    if(fecha_actual>reserva.start_datetime){
+    const fecha_actual = new Date()
+    if (fecha_actual > reserva.start_datetime) {
         throw new Error('APPOINTMENT_ALREADY_FINISHED')
     }
-    const updateAppointment=await pool.query(`UPDATE appointments SET client_id=NULL,status='available' where id=$1 AND client_id=$2 RETURNING *`,[id_cita,id_user])
+    const updateAppointment = await pool.query(`UPDATE appointments SET client_id=NULL,status='available' where id=$1 AND client_id=$2 RETURNING *`, [id_cita, id_user])
 
-    return {message:'cita Cancelada correctamente',cita:updateAppointment.rows}
+    return { message: 'cita Cancelada correctamente', cita: updateAppointment.rows }
 }
-//loguearme con prof
-//crear cita a nombre del profesional(recuerde que el servicio lo debió haber creado previamente)
-//asignar cita con un usuario de rol cliente
-//cancelar la cita y ver el retorno
+export const profesionalGetHisAppointmentsService = async (id_user) => {
+    const profesionaIs = await pool.query('SELECT id,active FROM professionals where user_id=$1', [id_user])
+    if (profesionaIs.rows.length === 0 || !profesionaIs.rows[0]?.active) {
+        throw new Error('PROFESSIONAL_NOT_FOUND')
+    }
+    const profesional_id = profesionaIs.rows[0].id
+    const professionalsAppointments = await pool.query('SELECT a.id, s.name AS service_name,c.name AS client_name, a.start_datetime,a.end_datetime,a.status,a.professional_id from appointments a INNER JOIN services s ON s.id=a.service_id LEFT JOIN users c ON c.id=a.client_id where a.professional_id=$1 ORDER BY a.start_datetime ASC', [profesional_id])
+
+    return professionalsAppointments.rows
+}
+export const completeAppointmentService = async (id_appointment, id_user) => {
+
+    const searchAppointment = await pool.query('SELECT id,professional_id,status,start_datetime from appointments where id=$1', [id_appointment])
+    if (searchAppointment.rows.length === 0) {
+        throw new Error('APPOINTMENT_NOT_FOUND')
+    }
+    const profesionalContext = await pool.query('SELECT id,active from professionals where user_id=$1', [id_user])
+    if (profesionalContext.rows.length === 0 || !profesionalContext.rows[0]?.active) {
+        throw new Error('PROFESSIONAL_NOT_FOUND')
+    }
+    const appointment = searchAppointment.rows[0]
+    if (profesionalContext.rows[0].id !== searchAppointment.rows[0].professional_id) {
+        throw new Error('APPOINTMENT_IS_NOT_YOUR')
+    }
+    if (appointment.status.toLowerCase() !== 'confirmed') {
+        throw new Error('APPOINTMENT_IS_NOT_CONFIRMED')
+    }
+    const fecha_actual=new Date()
+    
+    if (fecha_actual<appointment.start_datetime){
+        throw new Error('APPOINTMENT_HAVE_NOT_BEEN')
+    }
+    const updateAppointment = await pool.query(`UPDATE appointments set status='completed' where id=$1 AND status = 'confirmed' RETURNING id,service_id,client_id,start_datetime,status`, [id_appointment])
+    if(updateAppointment.rows.length===0){
+        throw new Error('ERROR_TO_UPDATE')
+    }
+    console.log(profesionalContext.rows)
+    return updateAppointment.rows[0]
+}

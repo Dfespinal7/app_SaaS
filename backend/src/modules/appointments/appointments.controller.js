@@ -1,5 +1,5 @@
 import { pool } from "../../config/db.js"
-import { bookAppointmentService, cancelASlotService, createAppointmentsService, getAppointmentsForServiceService, getMyAppointmentsService } from "./appointments.services.js"
+import { bookAppointmentService, cancelASlotService, completeAppointmentService, createAppointmentsService, getAppointmentsForServiceService, getMyAppointmentsService, profesionalGetHisAppointmentsService } from "./appointments.services.js"
 
 export const createAppointmentController = async (req, res) => {
     try {
@@ -52,7 +52,7 @@ export const getMyAppointmentsController = async (req, res) => {
         res.json(result)
     } catch (e) {
         console.log('ERROR AL OBTENER CITAS', e)
-        if(e.message==='WITHOUT_APPOINTMENTS'){
+        if (e.message === 'WITHOUT_APPOINTMENTS') {
             return res.status(404).json({ message: 'No tiene citas asignadas hasta el momento' })
         }
         return res.status(500).json({ message: 'Error en el server' })
@@ -65,19 +65,55 @@ export const cancelASlotController = async (req, res) => {
         res.json(result)
     } catch (e) {
         console.log('ERROR AL CANCELAR CITAS', e)
-        if(e.message==='SLOT_NOT_FOUND'){
+        if (e.message === 'SLOT_NOT_FOUND') {
             return res.status(404).json({ message: 'La cita que intenta cancelar no existe' })
         }
-        if(e.message==='CLIENT_DIFERENT'){
+        if (e.message === 'CLIENT_DIFERENT') {
             return res.status(409).json({ message: 'La cita que intenta cancelar no esta a nombre del usuario autenticado' })
         }
-        if(e.message==='ALREADY_CANCELED'){
+        if (e.message === 'ALREADY_CANCELED') {
             return res.status(409).json({ message: 'La cita que intenta cancelar no esta confirmada aun' })
         }
-        if(e.message==='APPOINTMENT_ALREADY_FINISHED'){
+        if (e.message === 'APPOINTMENT_ALREADY_FINISHED') {
             return res.status(409).json({ message: 'La fecha de la cita que intenta cancelar ya pasó' })
         }
 
         return res.status(500).json({ message: 'Error en el server' })
+    }
+}
+export const profesionalGetHisAppointments = async (req, res) => {
+    try {
+        const result = await profesionalGetHisAppointmentsService(req.user.id)
+        res.json(result)
+    } catch (e) {
+        console.log('ERROR AL OBTENER CITAS POR PROFESIONAL', e)
+        if (e.message === 'PROFESSIONAL_NOT_FOUND') {
+            return res.status(404).json({ message: 'profesional no encontrado o innactivo' })
+        }
+        return res.status(500).json({ message: 'ERROR EN EL SERVER' })
+    }
+}
+export const completeAppointmentController = async (req, res) => {
+    try {
+        const result = await completeAppointmentService(req.params.id, req.user.id)
+        res.json(result)
+    } catch (e) {
+        console.log('ERROR AL COMPLETAR CITA POR PROF', e)
+        if (e.message === 'APPOINTMENT_NOT_FOUND') {
+            return res.status(404).json({ message: 'la cita no existe en la base de datos' })
+        }
+        if (e.message === 'PROFESSIONAL_NOT_FOUND') {
+            return res.status(404).json({ message: 'profesional no encontrado o innactivo' })
+        }
+        if (e.message === 'APPOINTMENT_IS_NOT_YOUR') {
+            return res.status(409).json({ message: 'la cita no pertenece a este profesional' })
+        }
+        if (e.message === 'APPOINTMENT_IS_NOT_CONFIRMED') {
+            return res.status(409).json({ message: 'la cita no ha sido confirmada' })
+        }
+        if (e.message === 'APPOINTMENT_HAVE_NOT_BEEN') {
+            return res.status(400).json({ message: 'la cita aun no ha pasado' })
+        }
+       return res.status(500).json({ message: 'error en el server' })
     }
 }
