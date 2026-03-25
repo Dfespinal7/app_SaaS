@@ -1,4 +1,4 @@
-import { createProfessionalService, profileProfessionalService } from "./professionals.services.js"
+import { createProfessionalService, getAllProfesionalsService, getServicesByProfessionalIdService, profileProfessionalService, requestProfessionalServices } from "./professionals.services.js"
 
 export const createProfessionalController = async (req, res) => {
     try {
@@ -15,15 +15,45 @@ export const createProfessionalController = async (req, res) => {
         return res.status(500).json({ message: 'Error en el servidor' })
     }
 }
-export const profileProfessionalController=async(req,res)=>{
-    try{
-        const data=await profileProfessionalService(req.user.id)
+export const profileProfessionalController = async (req, res) => {
+    try {
+        const data = await profileProfessionalService(req.user.id)
         res.json(data)
-    }catch(e){
-        console.log('ERROR EN PROFILE PROFESSIONAL',e)
-        if(e.message==='PROFESSIONAL_PROFILE_NOT_FOUND'){
-            return res.status(404).json({message:'Perfil de profesional no encontrado'})
+    } catch (e) {
+        console.log('ERROR EN PROFILE PROFESSIONAL', e)
+        if (e.message === 'PROFESSIONAL_PROFILE_NOT_FOUND') {
+            return res.status(404).json({ message: 'Perfil de profesional no encontrado' })
         }
-        return res.status(500).json({message:'error en server'})
+        return res.status(500).json({ message: 'error en server' })
+    }
+}
+
+export const getAllProfesionals = async (req, res) => {
+    try {
+        const resul = await getAllProfesionalsService()
+        res.json(resul)
+    } catch (e) {
+        console.log('ERROR AL OBTENER PROFESSIONALES PUBLICOS', e)
+        return res.status(500).json({ message: 'Error en el server' })
+    }
+}
+export const getServicesByProfessionalIdController = async (req, res) => {
+    try {
+        const result = await getServicesByProfessionalIdService(req.params.id)
+        res.json(result)
+    } catch (e) {
+        console.log('ERROR AL OBTENER SERVICIOS FILTER PROF PUBLICOS', e)
+        return res.status(500).json({ message: 'Error en el server' })
+    }
+}
+export const requestProfessionalController = async (req, res) => {
+    try {
+        const resul = await requestProfessionalServices(req.user.id)
+        res.json(resul)
+    } catch (e) {
+        if (e.message === 'ALREADY_EXIST') {
+            return res.status(409).json({ message: 'Ya tiene una solictud pendiente por aprobacion' })
+        }
+        return res.status(500).json({ message: 'error en el server' })
     }
 }
