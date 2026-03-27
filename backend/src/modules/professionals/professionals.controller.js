@@ -1,4 +1,4 @@
-import { createProfessionalService, getAllProfesionalsService, getServicesByProfessionalIdService, profileProfessionalService, requestProfessionalServices } from "./professionals.services.js"
+import { createProfessionalService, getAllProfesionalsService, getRequestProfessionalsService, getServicesByProfessionalIdService, profileProfessionalService, requestProfessionalServices, responseAdminReqService } from "./professionals.services.js"
 
 export const createProfessionalController = async (req, res) => {
     try {
@@ -51,9 +51,40 @@ export const requestProfessionalController = async (req, res) => {
         const resul = await requestProfessionalServices(req.user.id)
         res.json(resul)
     } catch (e) {
+        console.log('ERROR EN LA SOLICITUD PARA SER PROFESIONAL', e)
         if (e.message === 'ALREADY_EXIST') {
             return res.status(409).json({ message: 'Ya tiene una solictud pendiente por aprobacion' })
         }
+        if (e.message === 'USER_ALREADY_IS_PROFESSIONAL') {
+            return res.status(409).json({ message: 'el usuario ya es profesional' })
+        }
         return res.status(500).json({ message: 'error en el server' })
+    }
+}
+export const responseAdminReqController = async (req, res) => {
+    try {
+        const result = await responseAdminReqService(req.params.id, req.body.status)
+        res.json(result)
+    } catch (e) {
+        console.log('ERROR EN LA RESPUESTA PARA SER PROFESIONAL', e)
+        if (e.message === 'REQUEST_NOT_FOUND') {
+            return res.status(404).json({ message: 'la solicitud no se encuentra en la base de datos' })
+        }
+        if (e.message === 'ALREADY_RESPONSE') {
+            return res.status(409).json({ message: 'la solicitud ya fue respondida' })
+        }
+        if (e.message === 'STATUS_NOT_VALID') {
+            return res.status(401).json({ message: 'el estado no es valido' })
+        }
+        return res.status(500).json({ message: 'error en el server' })
+    }
+}
+export const getRequestProfessionalsController = async (req, res) => {
+    try {
+        const result = await getRequestProfessionalsService()
+        res.json(result)
+    } catch (e) {
+        console.log('ERROR AL OBTENER SOLICITUDES DE PROF', e)
+        return res.status(500).json({ message: 'ERROR EN EL SERVER' })
     }
 }

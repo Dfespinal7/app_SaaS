@@ -9,6 +9,7 @@ export const authMiddleware = (req, res, next) => {
             return res.status(401).json({ message: 'No autorizado, no existe' })
         }
         const decode=JWT.verify(token, process.env.TOKEN_SECRET)
+        
         req.user = decode
         next()
     } catch (e) {
