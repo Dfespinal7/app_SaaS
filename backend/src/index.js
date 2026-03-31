@@ -17,7 +17,8 @@ app.use(express.json())
 app.use(cookieParser())
 app.use(morgan('dev'))//aqui le especificamos a morgan que queremos que nos trate como dev
 app.use(cors({
-
+    origin:'http://localhost:5173',
+    credentials:true
 }))
 
 app.use(userRouter)//le decimos a nuestra app, que vamos a usar esta const de rutas
