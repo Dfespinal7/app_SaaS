@@ -1,12 +1,15 @@
 import { useContext, createContext, type ReactNode, useState, useEffect } from "react";
 import Swal from "sweetalert2";
+import type { Role } from "../routes/ProtectedRoute";
+import { useNavigate } from "react-router-dom";
 type ContextProps = {
     handleChangeInputLogin: (e: React.ChangeEvent<HTMLInputElement>) => void
     handleSubmitLogin: (e: React.FormEvent<HTMLFormElement>) => void
     userLogin: UserLoginProps
     logout: () => void
-    token: string|null
-    userReturned:UserReturnedProps|null
+    token: string | null
+    userReturned: UserReturnedProps | null
+    loading: boolean
 }
 type AuthProviderProps = {
     children: ReactNode
@@ -19,7 +22,7 @@ type UserReturnedProps = {
     id: number
     name: string
     email: string
-    role: string
+    role: Role
 
 }
 const AuthContext = createContext<ContextProps | null>(null)//creamos el contexto y lo guardanmos en una constante
@@ -32,8 +35,11 @@ export const useAuth = () => {//creamos una funcion que usa el contexto y la exp
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {// componente que envuelve y reparte el contexto
     const [userLogin, setUserLogin] = useState<UserLoginProps>({ email: '', password_hash: '' })
-    const [token, setToken] = useState<string|null>(null)
+    const [token, setToken] = useState<string | null>(null)
     const [userReturned, setUserReturned] = useState<UserReturnedProps | null>(null)
+    const [loading, setLoading] = useState(true)
+
+    const navigate = useNavigate()
 
     const handleChangeInputLogin = (e: React.ChangeEvent<HTMLInputElement>) => {//funcion que al cambiar input le da value al objeto de userLogin
         const { name, value } = e.target
@@ -71,54 +77,72 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {// componente 
             showConfirmButton: false,
             timer: 2000
         })
-        console.log('data', data)
+
         setUserReturned(data.user)
         setToken(data.token)
+        setLoading(false)
         localStorage.setItem('token', data.token)
         localStorage.setItem('user', JSON.stringify(data.user))
+
+
+        navigate(`/dashboard-${data.user.role}`)
+
     }
     const logout = async () => {//funcion para cerrar sesion y limpiar localStorage y cookies
-        const response = await fetch('http://localhost:5000/auth/logout', {
-            method: 'POST',
-            credentials: 'include'
+        const questionLogout = await Swal.fire({
+            icon: 'info',
+            title: 'Seguro que desea cerrar sesión?',
+            showCancelButton: true
         })
-        const data = await response.json()
-        if (!response.ok) {
-            console.log(data.message)
+        
+        if (questionLogout.isConfirmed) {
+            const response = await fetch('http://localhost:5000/auth/logout', {
+                method: 'POST',
+                credentials: 'include'
+            })
+            const data = await response.json()
+            if (!response.ok) {
+                console.log(data.message)
+                Swal.fire({
+                    icon: 'error',
+                    title: 'error al cerrar sesion',
+                    text: data.message,
+                    showConfirmButton: false,
+                    timer: 2000
+                })
+                return
+            }
+            setUserReturned(null)
+            setUserLogin({ email: '', password_hash: '' })
+            setToken(null)
+            setLoading(false)
+            localStorage.removeItem('token')
+            localStorage.removeItem('user')
             Swal.fire({
-                icon: 'error',
-                title: 'error al cerrar sesion',
+                icon: 'success',
+                title: 'Todo salió bien',
                 text: data.message,
                 showConfirmButton: false,
                 timer: 2000
             })
-            return
+            navigate('/login')
         }
-        setUserReturned(null)
-        setUserLogin({ email: '', password_hash: '' })
-        setToken(null)
-        localStorage.removeItem('token')
-        localStorage.removeItem('user')
-        Swal.fire({
-            icon: 'success',
-            title: 'Todo salió bien',
-            text: data.message,
-            showConfirmButton: false,
-            timer: 2000
-        })
+
     }
-    useEffect(() => {//funcion que al recargar la pg, recupera y no 'olvida' el token y el usuario que esta autenticado
-        const tokenStore = localStorage.getItem('token')
-        const userStore = localStorage.getItem('user')
-        if (!tokenStore || !userStore) {
-            console.log('item no encontrado en local store')
-            return
+    useEffect(() => {
+        const tokenStore = localStorage.getItem('token');
+        const userStore = localStorage.getItem('user');
+
+        if (tokenStore && userStore) {
+            setToken(tokenStore);
+            setUserReturned(JSON.parse(userStore));
         }
-        setToken(tokenStore)
-        setUserReturned(JSON.parse(userStore))
-    }, [])
+
+        // 🔥 IMPORTANTE: terminar carga SIEMPRE
+        setLoading(false);
+    }, []);
     return (
-        <AuthContext.Provider value={{ handleChangeInputLogin, handleSubmitLogin, userLogin, logout, token,userReturned }}>
+        <AuthContext.Provider value={{ handleChangeInputLogin, handleSubmitLogin, userLogin, logout, token, userReturned, loading }}>
             {children}
         </AuthContext.Provider>
     )
