@@ -16,13 +16,23 @@ export default function App() {
             <Route path='/login' element={<Login></Login>}></Route>
             <Route path='/unauthorized' element={<h1>No tiene autorizacion para ingresar a esta sesion</h1>}></Route>
             <Route path='/dashboard-admin' element={<ProtectedRoute rol={["admin"]}><DashboardLayout></DashboardLayout></ProtectedRoute>}>
-              <Route index element={<DashboardAdmin></DashboardAdmin>}></Route>
+              <Route path='panel-admin' element={<DashboardAdmin></DashboardAdmin>}></Route>
+              <Route path='usuarios' element={<h1>usuarios admin por definir</h1>}></Route>
+              <Route path='profile' element={<h1>perfil para todos los roles por definir</h1>}></Route>
+              <Route path='servicios' element={<h1>servicios admin por definir</h1>}></Route>
             </Route>
             <Route path='/dashboard-professional' element={<ProtectedRoute rol={["professional"]}><DashboardLayout></DashboardLayout></ProtectedRoute>}>
-              <Route index element={<DashboardProfessional></DashboardProfessional>}></Route>
+              <Route path='panel-professional' element={<DashboardProfessional></DashboardProfessional>}></Route>
+              <Route path='agenda-professional' element={<h1>agenda professional por definir</h1>}></Route>
+              <Route path='disponibilidad-professional' element={<h1>Disponibilidad professional por definir</h1>}></Route>
+              <Route path='profile' element={<h1>perfil para todos los roles por definir</h1>}></Route>
             </Route>
             <Route path='/dashboard-client' element={<ProtectedRoute rol={["client"]}><DashboardLayout></DashboardLayout></ProtectedRoute>}>
-              <Route index element={<DashboardClient></DashboardClient>}></Route>
+              <Route path='panel-client' element={<DashboardClient></DashboardClient>}></Route>
+              <Route path='profile' element={<h1>perfil para todos los roles por definir</h1>}></Route>
+              <Route path='agendar-cita' element={<h1>agendar cita cliente por definir</h1>}></Route>
+              <Route path='mis-citas' element={<h1>mis citas clientes por definir</h1>}></Route>
+              
             </Route>
           </Routes>
         </AuthProvider>

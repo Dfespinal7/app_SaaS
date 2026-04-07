@@ -1,29 +1,32 @@
+import { NavLink } from "react-router-dom"
 import { useAuth } from "../../context/AuthContext"
 import { type classNameProps } from "./Topbar"
 export default function Sidebar({ className }: classNameProps) {
-  const { userReturned,logout } = useAuth()
+  const { userReturned, logout } = useAuth()
   const menus = {
-    admin: [{ name: 'Dashboard', path: '', icon: '' }, { name: 'Usuarios', path: '', icon: '' }, { name: 'Servicios', path: '', icon: '' }],
-    client: [{ name: 'Dashboard', path: '', icon: '' }, { name: 'Agendar cita', path: '', icon: '' }, { name: 'Mis citas', path: '', icon: '' }],
-    professional: [{ name: 'Dashboard', path: '', icon: '' }, { name: 'Agenda', path: '', icon: '' }, { name: 'disponibilidad', path: '', icon: '' }]
+    admin: [{ name: 'Dashboard', path: '/dashboard-admin/panel-admin', icon: '' }, { name: 'Usuarios', path: '/dashboard-admin/usuarios', icon: '' }, { name: 'Servicios', path: '/dashboard-admin/servicios', icon: '' }, { name: 'Mi perfil', path: '/dashboard-admin/profile', icon: '' }],
+    client: [{ name: 'Dashboard', path: '/dashboard-client/panel-client', icon: '' }, { name: 'Agendar cita', path: '/dashboard-client/agendar-cita', icon: '' }, { name: 'Mis citas', path: '/dashboard-client/mis-citas', icon: '' }, { name: 'Mi perfil', path: '/dashboard-client/profile', icon: '' }],
+    professional: [{ name: 'Dashboard', path: '/dashboard-professional/panel-professional', icon: '' }, { name: 'Agenda', path: '/dashboard-professional/agenda-professional', icon: '' }, { name: 'Disponibilidad', path: '/dashboard-professional/disponibilidad-professional', icon: '' }, { name: 'Mi perfil', path: '/dashboard-professional/profile', icon: '' }]
   }
   const menu = userReturned ? menus[userReturned.role] : []
 
 
   return (
     <div className={className}>
-      <div>
-        <h1 className="text-xl font-bold ">Dashboard</h1>
-        <h1 className="text-xl font-bold ">{userReturned?.role}</h1>
+      <div className="rounded-lg bg-gray-100 px-3 flex flex-col justify-between items-center py-5 w-30">
+        <h1 className="text-xl font-bold ">{userReturned?.name}</h1>
+        <h1 className="text-lg font-light ">{userReturned?.role}</h1>
       </div>
-      <ul className=" h-80 flex flex-col justify-between py-5">
+      <ul className="flex-1 rounded-lg bg-gray-100 px-3 flex flex-col justify-between py-5">
         {
           menu.map((item, index) => (
-            <li key={index} className="p-0.5 rounded-lg font-semibold hover:scale-105 transition-all  duration-500 cursor-pointer hover:bg-gray-200">{item.name}</li>
+            <li key={index}><NavLink to={item.path} className={({ isActive }) => 
+              `p-2 rounded-lg font-semibold transition-all duration-300 block ${isActive ? "bg-blue-500 text-white" : "hover:bg-gray-200"}`
+            }>{item.name}</NavLink></li>
           ))
         }
       </ul>
-      <button onClick={logout} className='p-2 rounded-lg bg-red-500 font-bold text-white cursor-pointer hover:scale-105 transition-all duration-500'>logout</button>
+      <button onClick={logout} className='p-2 my-4 rounded-lg bg-red-500 font-bold text-white cursor-pointer hover:scale-105 transition-all duration-500'>logout</button>
     </div>
   )
 }
