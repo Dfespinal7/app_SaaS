@@ -10,6 +10,9 @@ type ContextProps = {
     token: string | null
     userReturned: UserReturnedProps | null
     loading: boolean
+    requestToBeProfessional: () => void
+    handleStatus:()=>void
+    status:boolean
 }
 type AuthProviderProps = {
     children: ReactNode
@@ -38,6 +41,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {// componente 
     const [token, setToken] = useState<string | null>(null)
     const [userReturned, setUserReturned] = useState<UserReturnedProps | null>(null)
     const [loading, setLoading] = useState(true)
+    const [status, setStatus] = useState(false)
 
     const navigate = useNavigate()
 
@@ -94,7 +98,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {// componente 
             title: 'Seguro que desea cerrar sesión?',
             showCancelButton: true
         })
-        
+
         if (questionLogout.isConfirmed) {
             const response = await fetch('http://localhost:5000/auth/logout', {
                 method: 'POST',
@@ -129,6 +133,61 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {// componente 
         }
 
     }
+    const handleStatus = async () => {
+        const result = await fetch('http://localhost:5000/professional/request/status', {
+            method: 'GET',
+            credentials: 'include'
+        })
+        const data = await result.json()
+        setStatus(data)
+    }
+    const requestToBeProfessional = async () => {
+        const rol = userReturned?.role
+        if (!rol || rol !== 'client') {
+            Swal.fire({
+                icon: 'info',
+                text: 'Solo los clientes pueden hacer esta solicitud',
+                showConfirmButton: false,
+                timer: 2000
+            })
+            return
+        }
+        const request = await Swal.fire({
+            icon: 'info',
+            text: 'Seguro que desea enviar la solicitud para ser profesional?',
+            showCancelButton: true,
+            confirmButtonText: 'Enviar',
+            cancelButtonText: 'Cancelar',
+            cancelButtonColor: 'red'
+        })
+        if (request.isConfirmed) {
+            const response = await fetch('http://localhost:5000/professional/request', {
+                method: 'POST',
+                credentials: 'include'
+            })
+            const data = await response.json()
+            if (!response.ok) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Algo salió mal!',
+                    text: data.message,
+                    showConfirmButton: false,
+                    timer: 2000
+                })
+                return
+            }
+            await handleStatus()
+            Swal.fire({
+                icon: 'success',
+                title: 'Todo salió bien!',
+                text: data.message,
+                showConfirmButton: false,
+                timer: 2000
+            })
+
+        }
+
+    }
     useEffect(() => {
         const tokenStore = localStorage.getItem('token');
         const userStore = localStorage.getItem('user');
@@ -142,7 +201,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {// componente 
         setLoading(false);
     }, []);
     return (
-        <AuthContext.Provider value={{ handleChangeInputLogin, handleSubmitLogin, userLogin, logout, token, userReturned, loading }}>
+        <AuthContext.Provider value={{handleStatus,status, handleChangeInputLogin, handleSubmitLogin, userLogin, logout, token, userReturned, loading, requestToBeProfessional }}>
             {children}
         </AuthContext.Provider>
     )

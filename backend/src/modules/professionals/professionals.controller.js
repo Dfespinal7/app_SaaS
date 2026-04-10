@@ -1,4 +1,4 @@
-import { createProfessionalService, getAllProfesionalsService, getRequestProfessionalsService, getServicesByProfessionalIdService, profileProfessionalService, requestProfessionalServices, responseAdminReqService } from "./professionals.services.js"
+import { createProfessionalService, getAllProfesionalsService, getRequestProfessionalsService, getServicesByProfessionalIdService, getStatusRequestService, profileProfessionalService, requestProfessionalServices, responseAdminReqService } from "./professionals.services.js"
 
 export const createProfessionalController = async (req, res) => {
     try {
@@ -87,4 +87,8 @@ export const getRequestProfessionalsController = async (req, res) => {
         console.log('ERROR AL OBTENER SOLICITUDES DE PROF', e)
         return res.status(500).json({ message: 'ERROR EN EL SERVER' })
     }
+}
+export const getStatusRequestController=async(req,res)=>{
+    const result=await getStatusRequestService(req.user.id)
+    res.json(result)
 }

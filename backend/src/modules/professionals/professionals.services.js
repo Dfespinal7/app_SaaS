@@ -126,3 +126,11 @@ export const getRequestProfessionalsService = async () => {
     const getAllResquest = await pool.query('SELECT id,user_id,status,notes,created_at FROM professional_request')
     return getAllResquest.rows
 }
+
+export const getStatusRequestService=async(user_id)=>{
+    const validStatus=await pool.query(`Select status from professional_request where user_id=$1 and status='pending'`,[user_id])
+    if(validStatus.rows.length>0){
+        return true
+    }
+    return false
+}
