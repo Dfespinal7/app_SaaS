@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react'
+import  { useEffect, useState } from 'react'
 import Swal from 'sweetalert2'
 
 type RequestProps = {
     id: number
-    user_id: number
+    email_usuario: string
     status: string
     notes: string | null
     created_at: string
@@ -11,6 +11,7 @@ type RequestProps = {
 type StatusProps = 'approved' | 'rejected'
 export default function SolicitutesAdmin() {
     const [allRequest, setAllRequest] = useState<RequestProps[] | []>([])
+    const [loading,setLoading]=useState(true)
     const getAllRequest = async () => {
         const query = await fetch('http://localhost:5000/professional/request', {
             method: 'GET',
@@ -18,6 +19,7 @@ export default function SolicitutesAdmin() {
         })
         const data = await query.json()
         setAllRequest(data)
+        setLoading(false)
     }
     const submitResponse = async (status: StatusProps, id: number) => {
         const questionTosend = await Swal.fire({
@@ -41,27 +43,28 @@ export default function SolicitutesAdmin() {
                 Swal.fire({
                     icon: 'error',
                     title: 'Ocurrió un error!',
-                    text:data.message,
-                    showConfirmButton:false,
-                    timer:3000
-                    
+                    text: data.message,
+                    showConfirmButton: false,
+                    timer: 3000
+
                 })
                 return
             }
             getAllRequest()
             Swal.fire({
-                    icon: 'success',
-                    title: 'Todo Salió bien!',
-                    text:data.message,
-                    showConfirmButton:false,
-                    timer:3000
-                    
-                })
+                icon: 'success',
+                title: 'Todo Salió bien!',
+                text: data.message,
+                showConfirmButton: false,
+                timer: 3000
+
+            })
         }
-    }
+    }  
     useEffect(() => {
         getAllRequest()
     }, [])
+    if(loading)return <p className="text-center">Cargando Solicitudes</p>
     return (
         <div className=' w-full flex justify-center items-center'>
             <table className="w-[70%] border-collapse shadow-md rounded-lg overflow-hidden">
@@ -84,7 +87,7 @@ export default function SolicitutesAdmin() {
                         >
                             <td className="p-3 font-medium">{r.id}</td>
 
-                            <td className="p-3">{r.user_id}</td>
+                            <td className="p-3">{r.email_usuario}</td>
 
                             <td className="p-3">
                                 <span
@@ -109,11 +112,11 @@ export default function SolicitutesAdmin() {
                             </td>
 
                             <td className="p-3 flex gap-2 justify-center">
-                                <button onClick={() => submitResponse('approved', r.id)} className="px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600 transition cursor-pointer hover:scale-105 duration-500">
+                                <button disabled={r.status!=='pending'} onClick={() => submitResponse('approved', r.id)} className={r.status!=='pending'?"px-3 py-1  rounded-md  text-white bg-gray-300 cursor-not-allowed":'px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600 transition cursor-pointer hover:scale-105 duration-500'}>
                                     Aprobar
                                 </button>
 
-                                <button onClick={() => submitResponse('rejected', r.id)} className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 transition cursor-pointer hover:scale-105 duration-500">
+                                <button disabled={r.status!=='pending'} onClick={() => submitResponse('rejected', r.id)} className={r.status!=='pending'?"px-3 py-1  rounded-md  text-white bg-gray-300 cursor-not-allowed":'px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 transition cursor-pointer hover:scale-105 duration-500'}>
                                     Negar
                                 </button>
                             </td>

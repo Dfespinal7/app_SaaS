@@ -1,10 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 
 export default function ProfileComponen() {
   const { userReturned, requestToBeProfessional,status,handleStatus } = useAuth()
-  
-  
+    console.log()
   useEffect(() => {
     if (userReturned?.role === 'client') {
       handleStatus()
@@ -22,6 +21,7 @@ export default function ProfileComponen() {
           userReturned?.role === 'client' ? <button onClick={requestToBeProfessional} disabled={status} className={status ? 'font-bold bg-gray-400 text-white p-2 rounded-lg cursor-not-allowed' : 'font-bold bg-blue-400 text-white p-2 rounded-lg cursor-pointer'}>{status ? 'Solicitud pendiente' : 'Solicitar ser profesional'}</button> : ''
         }
       </div>
+
 
     </div>
   )

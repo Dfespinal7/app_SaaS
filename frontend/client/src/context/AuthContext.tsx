@@ -2,6 +2,8 @@ import { useContext, createContext, type ReactNode, useState, useEffect } from "
 import Swal from "sweetalert2";
 import type { Role } from "../routes/ProtectedRoute";
 import { useNavigate } from "react-router-dom";
+import Cookies from 'js-cookie'
+
 type ContextProps = {
     handleChangeInputLogin: (e: React.ChangeEvent<HTMLInputElement>) => void
     handleSubmitLogin: (e: React.FormEvent<HTMLFormElement>) => void
@@ -200,6 +202,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {// componente 
         // 🔥 IMPORTANTE: terminar carga SIEMPRE
         setLoading(false);
     }, []);
+    useEffect(()=>{
+        const tokenCookie=Cookies.get('token')
+        if(!tokenCookie){
+            localStorage.removeItem('token')
+            localStorage.removeItem('user')
+            setToken(null)
+            setUserReturned(null)
+        }
+    },[])
     return (
         <AuthContext.Provider value={{handleStatus,status, handleChangeInputLogin, handleSubmitLogin, userLogin, logout, token, userReturned, loading, requestToBeProfessional }}>
             {children}

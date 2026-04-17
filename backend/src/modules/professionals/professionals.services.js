@@ -123,7 +123,7 @@ export const responseAdminReqService = async (id_request, status) => {
     }
 }
 export const getRequestProfessionalsService = async () => {
-    const getAllResquest = await pool.query('SELECT id,user_id,status,notes,created_at FROM professional_request')
+    const getAllResquest = await pool.query('SELECT pr.id, u.email as email_usuario,pr.status,pr.notes,pr.created_at  FROM professional_request pr INNER JOIN users u ON u.id=pr.user_id')
     return getAllResquest.rows
 }
 
