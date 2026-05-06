@@ -79,7 +79,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {// componente 
         Swal.fire({
             icon: 'success',
             title: 'Todo salió bien',
-            text: data.message,
+            text: 'Cita creada exitosamente',
             showConfirmButton: false,
             timer: 2000
         })
@@ -209,6 +209,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {// componente 
             localStorage.removeItem('user')
             setToken(null)
             setUserReturned(null)
+           
         }
     },[])
     return (

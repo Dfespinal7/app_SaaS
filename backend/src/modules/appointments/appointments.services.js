@@ -1,11 +1,23 @@
 import { pool } from "../../config/db.js"
 
 export const createAppointmentsService = async (body, id_user) => {
-    const { service_id, start_datetime, end_datetime, status, notes } = body
+    const { service_id, start_datetime, end_datetime, status, notes,client_id } = body
+    
+    const primerStatus=status?status:"available"//si status llega en el body como null, el sistema no lo recibe,por eso le ponemos el default available en caso de llegar como null
+    const defClient=client_id?client_id:null
+    const defStatus=client_id?"confirmed":primerStatus //si se envia un cliente en la solicitud de la cita, el estado ya no es available sino comfirmed
     const searchService = await pool.query('SELECT id,professional_id,active FROM services where id=$1', [service_id])//validamos que el servicio exista
 
     const searchProfessional = await pool.query('SELECT id,active FROM professionals where user_id=$1', [id_user])//buscamos el profesional desde el req.user,asegurandonos que el usuario que intenta crear la agenda si sea profesional, aunque ya eso lo valida el middleware
-
+    if(defClient){
+        const validClient=await pool.query('SELECT id,role FROM users where id=$1',[client_id])
+        if(validClient.rows.length===0){
+            throw new Error('USER_NOT_FOUND')
+        }
+        if(validClient.rows[0]?.role!=="client"){
+            throw new Error('USER_IS_NOT_CLIENT')
+        }
+    }
 
     if (searchProfessional.rows.length === 0 || !searchProfessional.rows[0]?.active) {//si el profesional no esta registrado o esta innactivo, enviamos error
         throw new Error('PROFESSIONAL_NOT_FOUND')
@@ -39,9 +51,11 @@ export const createAppointmentsService = async (body, id_user) => {
         throw new Error('SLOT_CONFLICT')
     }
 
-    const response = await pool.query('INSERT INTO appointments(service_id,professional_id,start_datetime,end_datetime,status,notes)VALUES($1,$2,$3,$4,$5,$6) RETURNING service_id,professional_id,start_datetime,end_datetime,status,notes', [service_id, professional_id, start_datetime, end_datetime, status, notes])
+    const response = await pool.query('INSERT INTO appointments(service_id,professional_id,start_datetime,end_datetime,status,notes,client_id)VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING service_id,professional_id,start_datetime,end_datetime,status,notes,client_id', [service_id, professional_id, start_datetime, end_datetime, defStatus, notes,defClient])
     return response.rows
 }
+
+
 export const getAppointmentsForServiceService = async (id) => {
     if (!id) {
         throw new Error('PARAM_NOT_VALID')

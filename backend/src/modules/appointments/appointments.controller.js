@@ -8,6 +8,12 @@ export const createAppointmentController = async (req, res) => {
         res.json(result)
     } catch (e) {
         console.log('ERROR AL CREAR AGENDA', e)
+        if(e.message==='SLOT_CONFLICT'){
+            return res.status(401).json({message:'La cita que intenta crear se cruza con una cita ya creada en el sistema'})
+        }
+        if(e.message==='SLOT_IN_PAST'){
+            return res.status(401).json({message:'La cita que intenta crear esta en pasado'})
+        }
         res.status(500).json({ message: 'error en el server' })
     }
 }

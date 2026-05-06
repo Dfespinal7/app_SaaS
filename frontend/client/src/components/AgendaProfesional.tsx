@@ -50,7 +50,7 @@ export default function AgendaProfesional() {
             {
                 myAppointments.length > 0 ?
                     myAppointments.map(item => (
-                        <div className="w-[70%]">
+                        <div className="w-[70%]" key={item.id}>
                             <div className="bg-gray-300 font-bold text-slate-900 px-2 py-1 rounded-lg mb-1">
                                 📅 {new Date(item.start_datetime).toLocaleString('es-CO', {
                                     weekday: 'long',
