@@ -7,7 +7,7 @@ export default function Sidebar({ className }: classNameProps) {
   const menus = {
     admin: [{ name: 'Dashboard', path: '/dashboard-admin/panel-admin', icon: '' }, { name: 'Usuarios', path: '/dashboard-admin/usuarios', icon: '' }, { name: 'Servicios', path: '/dashboard-admin/servicios', icon: '' }, { name: 'Mi perfil', path: '/dashboard-admin/profile', icon: '' },{ name: 'solicitudes', path: '/dashboard-admin/solicitudes', icon: '' }],
     client: [{ name: 'Dashboard', path: '/dashboard-client/panel-client', icon: User }, { name: 'Agendar cita', path: '/dashboard-client/agendar-cita', icon: '' }, { name: 'Mis citas', path: '/dashboard-client/mis-citas', icon: '' }, { name: 'Mi perfil', path: '/dashboard-client/profile', icon: '' }],
-    professional: [{ name: 'Dashboard', path: '/dashboard-professional/panel-professional', icon: '' }, { name: 'Mi Agenda', path: '/dashboard-professional/agenda-professional', icon: '' }, { name: 'Disponibilidad', path: '/dashboard-professional/disponibilidad-professional', icon: '' }, { name: 'Mi perfil', path: '/dashboard-professional/profile', icon: '' }]
+    professional: [{ name: 'Dashboard', path: '/dashboard-professional/panel-professional', icon: '' },{ name: 'Mis servicios', path: '/dashboard-professional/myservices', icon: '' }, { name: 'Mi Agenda', path: '/dashboard-professional/agenda-professional', icon: '' }, { name: 'Disponibilidad', path: '/dashboard-professional/disponibilidad-professional', icon: '' }, { name: 'Mi perfil', path: '/dashboard-professional/profile', icon: '' }]
   }
   const menu = userReturned ? menus[userReturned.role] : []
 

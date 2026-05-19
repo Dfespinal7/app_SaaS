@@ -78,8 +78,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {// componente 
         setUserLogin({ email: '', password_hash: '' })//seteamos objeto de login, por seguridad no es bueno tener esta info guardada
         Swal.fire({
             icon: 'success',
-            title: 'Todo salió bien',
-            text: 'Cita creada exitosamente',
+            title: 'Bienvenido!!',
+            text: 'Sesion iniciada correctamente',
             showConfirmButton: false,
             timer: 2000
         })

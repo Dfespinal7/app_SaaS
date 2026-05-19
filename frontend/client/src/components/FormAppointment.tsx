@@ -1,4 +1,4 @@
-import { Calendar, Notebook, Scissors, Timer, User } from "lucide-react";
+import { Calendar, Lightbulb, MessageCircleCheck, Notebook, Scissors, Timer, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 
@@ -176,7 +176,7 @@ export default function FormAppointment() {
                   <div className="flex gap-1">
                     <Timer className="size-8 bg-blue-500 text-white p-1.5 rounded-full"></Timer> <label htmlFor="" className="font-bold">Duracion</label>
                   </div>
-                  <input readOnly type="text" className="border w-full rounded-lg px-2 py-1 text-gray-400" value={durationAppointment ? `${durationAppointment} munutos` : 'Seleccione servicio'} />
+                  <input readOnly type="text" className="border w-full rounded-lg px-2 py-1 text-gray-400" value={durationAppointment ? `${durationAppointment} minutos` : 'Seleccione servicio'} />
                 </div>
               </div>
             </section>
@@ -236,7 +236,12 @@ export default function FormAppointment() {
               </div>
             </div>
           </div>
-          <div className="border h-[29%] border-gray-200 rounded-lg bg-blue-50">seccion3</div>
+          <div className="border h-[29%] border-gray-200 rounded-lg bg-blue-50 flex flex-col gap-2 py-4 px-3">
+            <h1 className="flex gap-2"><Lightbulb className="text-yellow-300"></Lightbulb><span className="font-bold">Ten en cuenta</span></h1>
+            <p className="flex gap-2"><MessageCircleCheck className="text-blue-300"></MessageCircleCheck><span className="font-light">Verifica que la fecha este disponible</span></p>
+            <p className="flex gap-2"><MessageCircleCheck className="text-blue-300"></MessageCircleCheck><span className="font-light">La duracion se asigna segun el servicio</span></p>
+            <p className="flex gap-2"><MessageCircleCheck className="text-blue-300"></MessageCircleCheck><span className="font-light">el cliente recibirá una notificacion</span></p>
+          </div>
         </div>
       </div>
     </div>

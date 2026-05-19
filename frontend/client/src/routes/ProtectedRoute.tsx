@@ -11,7 +11,7 @@ type ProtectedRouteProps = {
 export default function ProtectedRoute({ children, rol }: ProtectedRouteProps) {
 
     const { userReturned, token, loading } = useAuth()
-
+    
     if (loading) {
         return <h1>Cargando</h1>
     }

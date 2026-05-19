@@ -10,6 +10,8 @@ import ProfileComponen from './components/ProfileComponen'
 import SolicitutesAdmin from './components/SolicitutesAdmin'
 import AgendaProfesional from './components/AgendaProfesional'
 import FormAppointment from './components/FormAppointment'
+import ListMyServices from './components/services/ListMyServices'
+import FormServices from './components/services/FormServices'
 
 export default function App() {
   return (
@@ -30,9 +32,11 @@ export default function App() {
             <Route path='/dashboard-professional' element={<ProtectedRoute rol={["professional"]}><DashboardLayout></DashboardLayout></ProtectedRoute>}>
               <Route path='panel-professional' element={<DashboardProfessional></DashboardProfessional>}></Route>
               <Route path='agenda-professional' element={<AgendaProfesional></AgendaProfesional>}></Route>
+              <Route path='myservices' element={<ListMyServices></ListMyServices>}></Route>
               <Route path='disponibilidad-professional' element={<h1>Disponibilidad professional por definir</h1>}></Route>
               <Route path='profile' element={<ProfileComponen></ProfileComponen>}></Route>
               <Route path='form-appointment' element={<FormAppointment></FormAppointment>}></Route>
+              <Route path='form-services' element={<FormServices></FormServices>}></Route>
             </Route>
             <Route path='/dashboard-client' element={<ProtectedRoute rol={["client"]}><DashboardLayout></DashboardLayout></ProtectedRoute>}>
               <Route path='panel-client' element={<DashboardClient></DashboardClient>}></Route>

@@ -47,7 +47,8 @@ export default function AgendaProfesional() {
     return (
         <div className="w-full flex flex-col items-center gap-6 p-4">
             <Link to={'/dashboard-professional/form-appointment'}><button className="bg-blue-400 px-2 py-1 rounded-lg font-bold text-white cursor-pointer hover:scale-105 transition-all duration-500">Crear Agendas</button></Link>
-            {
+            <div className="w-full flex flex-col items-center gap-6 p-4 h-[80%] overflow-auto shadow-xs">
+                {
                 myAppointments.length > 0 ?
                     myAppointments.map(item => (
                         <div className="w-[70%]" key={item.id}>
@@ -79,6 +80,7 @@ export default function AgendaProfesional() {
                     ))
                     : <p className="bg-gray-300 px-2 py-1 rounded-lg font-bold text-2xl text-gray-600">No tiene citas registradas aun </p>
             }
+            </div>
 
 
 
